@@ -148,6 +148,69 @@ router.get('/me', authenticateToken, async (req, res) => {
   }
 });
 
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { username, email } = req.body;
+    if (!username || !email) {
+      return res.status(400).json({ success: false, message: 'กรุณาระบุชื่อผู้ใช้และอีเมล' });
+    }
+
+    const userResult = await pool.query(
+      `SELECT user_id, username, email, full_name FROM app_auth.users WHERE username = $1 AND status = 'ACTIVE'`,
+      [username]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้งานนี้ในระบบ' });
+    }
+
+    const user = userResult.rows[0];
+    if (user.email !== email) {
+      return res.status(400).json({ success: false, message: 'อีเมลไม่ตรงกับบัญชีผู้ใช้' });
+    }
+
+    // Generate temporary password
+    const tempPassword = 'Reset@' + Math.random().toString(36).slice(-6);
+    const hash = await bcrypt.hash(tempPassword, 10);
+    await pool.query('UPDATE app_auth.users SET password_hash = $1 WHERE user_id = $2', [hash, user.user_id]);
+
+    res.json({
+      success: true,
+      message: 'รีเซ็ตรหัสผ่านสำเร็จ',
+      data: { tempPassword, fullName: user.full_name },
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+router.post('/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'กรุณาระบุรหัสผ่านปัจจุบันและรหัสผ่านใหม่' });
+    }
+
+    const userResult = await pool.query(
+      'SELECT password_hash FROM app_auth.users WHERE user_id = $1',
+      [req.user.userId]
+    );
+    const valid = await bcrypt.compare(currentPassword, userResult.rows[0].password_hash);
+    if (!valid) {
+      return res.status(400).json({ success: false, message: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' });
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE app_auth.users SET password_hash = $1 WHERE user_id = $2', [hash, req.user.userId]);
+
+    res.json({ success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จ' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 router.post('/logout', authenticateToken, (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 });
