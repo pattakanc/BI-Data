@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 import { X, Package, TrendingUp, ExternalLink } from 'lucide-react';
 import { api } from '@/lib/api';
-import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils';
+import { formatCurrency, formatNumber, formatPercent, formatDateShort, formatDateLong } from '@/lib/utils';
 import ProductInvoiceModal from './ProductInvoiceModal';
 
 const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899', '#14b8a6'];
@@ -140,11 +140,11 @@ export default function BranchDetailModal({
                     <LineChart data={dailyTrend}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis dataKey="full_date" fontSize={10}
-                        tickFormatter={(v: any) => new Date(v).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} />
+                        tickFormatter={(v: any) => formatDateShort(v)} />
                       <YAxis fontSize={10} tickFormatter={(v: any) => `${(v / 1000).toFixed(0)}K`} />
                       <Tooltip
                         formatter={(v: any) => formatCurrency(v)}
-                        labelFormatter={(l: any) => new Date(l).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        labelFormatter={(l: any) => formatDateLong(l)}
                       />
                       <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} name="รายได้" dot={false} />
                       <Line type="monotone" dataKey="gp" stroke="#10b981" strokeWidth={2} name="กำไรขั้นต้น" dot={false} />

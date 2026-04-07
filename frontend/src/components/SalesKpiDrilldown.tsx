@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 import { X, Search, Building2, FileText, Package, TrendingUp, DollarSign, ShoppingCart, CreditCard, Activity, Users } from 'lucide-react';
 import { api } from '@/lib/api';
-import { formatCurrency, formatNumber } from '@/lib/utils';
+import { formatCurrency, formatNumber, formatDate, formatDateShort, formatDateLong } from '@/lib/utils';
 
 const KPI_CONFIG = {
   revenue: {
@@ -341,11 +341,11 @@ export default function SalesKpiDrilldown({ type, dateFrom, dateTo, onClose }: S
                   <LineChart data={dailyTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="full_date" fontSize={10}
-                      tickFormatter={(v: any) => new Date(v).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} />
+                      tickFormatter={(v: any) => formatDateShort(v)} />
                     <YAxis fontSize={10} tickFormatter={(v: any) => type === 'invoices' || type === 'customers' ? String(v) : type === 'margin' ? `${v}%` : `${(v / 1000).toFixed(0)}K`} />
                     <Tooltip
                       formatter={(v: any) => type === 'invoices' || type === 'customers' ? formatNumber(v) : type === 'margin' ? `${v}%` : formatCurrency(v)}
-                      labelFormatter={(l: any) => new Date(l).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      labelFormatter={(l: any) => formatDateLong(l)}
                     />
                     <Line type="monotone" dataKey={type === 'margin' ? 'margin_pct' : cfg.field} stroke={cfg.color} strokeWidth={2.5} name={cfg.label} dot={false} />
                     <Legend />
@@ -477,7 +477,7 @@ export default function SalesKpiDrilldown({ type, dateFrom, dateTo, onClose }: S
                         <td className="py-2.5 px-3 text-gray-400">{i + 1}</td>
                         <td className="py-2.5 px-3 font-mono text-xs text-blue-600 font-medium">{inv.invoice_no}</td>
                         <td className="py-2.5 px-3 text-xs text-gray-500">
-                          {inv.full_date ? new Date(inv.full_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }) : '-'}
+                          {formatDate(inv.full_date)}
                         </td>
                         <td className="py-2.5 px-3">
                           <div className="text-xs font-medium text-gray-700">{inv.branch_name}</div>

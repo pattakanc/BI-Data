@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 import { X, FileText, User, CreditCard, ChevronLeft, Building2, TrendingUp, Package } from 'lucide-react';
 import { api } from '@/lib/api';
-import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils';
+import { formatCurrency, formatNumber, formatPercent, formatDate } from '@/lib/utils';
 
 const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4'];
 
@@ -231,7 +231,7 @@ export default function SalesProductDrilldown({
                 </thead>
                 <tbody>
                   {invoices.map((inv: any, i: number) => {
-                    const invDate = inv.full_date ? new Date(inv.full_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }) : '-';
+                    const invDate = formatDate(inv.full_date);
                     const tierColor = inv.loyalty_tier === 'PLATINUM' ? 'bg-purple-100 text-purple-700'
                       : inv.loyalty_tier === 'GOLD' ? 'bg-yellow-100 text-yellow-700'
                       : inv.loyalty_tier === 'SILVER' ? 'bg-gray-100 text-gray-700'

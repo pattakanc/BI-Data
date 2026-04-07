@@ -9,7 +9,7 @@ import DateRangeFilter, { toDateKey } from '@/components/DateRangeFilter';
 import Loading from '@/components/Loading';
 import SalesKpiDrilldown from '@/components/SalesKpiDrilldown';
 import { api } from '@/lib/api';
-import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils';
+import { formatCurrency, formatNumber, formatPercent, formatDateShort, formatDateLong } from '@/lib/utils';
 
 const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4'];
 
@@ -68,9 +68,9 @@ export default function ExecutivePage() {
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={trend}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="full_date" tickFormatter={(v: any) => new Date(v).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} fontSize={11} />
+              <XAxis dataKey="full_date" tickFormatter={(v: any) => formatDateShort(v)} fontSize={11} />
               <YAxis fontSize={11} tickFormatter={(v: any) => `${(v / 1000).toFixed(0)}K`} />
-              <Tooltip formatter={(v: any) => formatCurrency(v)} labelFormatter={(l: any) => new Date(l).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })} />
+              <Tooltip formatter={(v: any) => formatCurrency(v)} labelFormatter={(l: any) => formatDateLong(l)} />
               <Line type="monotone" dataKey="revenue_amount" stroke="#3b82f6" strokeWidth={2} dot={false} name="รายได้" />
               <Line type="monotone" dataKey="gross_profit_amount" stroke="#10b981" strokeWidth={2} dot={false} name="กำไรขั้นต้น" />
               <Legend />

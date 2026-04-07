@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 import { X, Search, Building2, TrendingUp, DollarSign, Users, Package, MapPin } from 'lucide-react';
 import { api } from '@/lib/api';
-import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils';
+import { formatCurrency, formatNumber, formatPercent, formatDateShort, formatDateLong } from '@/lib/utils';
 
 const PIE_COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4'];
 
@@ -241,11 +241,11 @@ export default function BranchKpiDrilldown({ type, dateFrom, dateTo, onClose }: 
                   <LineChart data={dailyTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="full_date" fontSize={10}
-                      tickFormatter={(v: any) => new Date(v).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} />
+                      tickFormatter={(v: any) => formatDateShort(v)} />
                     <YAxis fontSize={10} tickFormatter={(v: any) => `${(v / 1000).toFixed(0)}K`} />
                     <Tooltip
                       formatter={(v: any) => formatCurrency(v)}
-                      labelFormatter={(l: any) => new Date(l).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      labelFormatter={(l: any) => formatDateLong(l)}
                     />
                     <Line type="monotone" dataKey="sales" stroke="#3b82f6" strokeWidth={2} name="ยอดขาย" dot={false} />
                     <Line type="monotone" dataKey="gp" stroke="#10b981" strokeWidth={2} name="กำไร" dot={false} />

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, FileText, User, CreditCard, ChevronLeft } from 'lucide-react';
 import { api } from '@/lib/api';
-import { formatCurrency, formatNumber } from '@/lib/utils';
+import { formatCurrency, formatNumber, formatDate } from '@/lib/utils';
 
 interface ProductInvoiceModalProps {
   branchKey: number;
@@ -122,7 +122,7 @@ export default function ProductInvoiceModal({
                 </thead>
                 <tbody>
                   {invoices.map((inv: any, i: number) => {
-                    const invDate = inv.full_date ? new Date(inv.full_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }) : '-';
+                    const invDate = formatDate(inv.full_date);
                     const tierColor = inv.loyalty_tier === 'PLATINUM' ? 'bg-purple-100 text-purple-700'
                       : inv.loyalty_tier === 'GOLD' ? 'bg-yellow-100 text-yellow-700'
                       : inv.loyalty_tier === 'SILVER' ? 'bg-gray-100 text-gray-700'
