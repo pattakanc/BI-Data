@@ -107,10 +107,11 @@ export default function BranchKpiDrilldown({ type, dateFrom, dateTo, onClose }: 
 
   const cfg = KPI_CONFIG[type];
   const Icon = cfg.icon;
+  const toKey = (d: string) => d.replace(/-/g, '');
 
   const fetchData = useCallback((region?: string, prodSearch?: string) => {
     setLoading(true);
-    api.branchKpiDrilldown(type, dateFrom, dateTo, region || undefined, prodSearch || undefined)
+    api.branchKpiDrilldown(type, toKey(dateFrom), toKey(dateTo), region || undefined, prodSearch || undefined)
       .then((res: any) => { if (res.success) setData(res.data); })
       .catch(console.error)
       .finally(() => setLoading(false));

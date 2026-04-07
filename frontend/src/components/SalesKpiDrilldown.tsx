@@ -206,10 +206,11 @@ export default function SalesKpiDrilldown({ type, dateFrom, dateTo, onClose }: S
 
   const cfg = KPI_CONFIG[type];
   const Icon = cfg.icon;
+  const toKey = (d: string) => d.replace(/-/g, '');
 
   const fetchData = useCallback((branchKey?: string, prodSearch?: string) => {
     setLoading(true);
-    api.salesKpiDrilldown(type, dateFrom, dateTo, branchKey ? parseInt(branchKey) : undefined, prodSearch || undefined)
+    api.salesKpiDrilldown(type, toKey(dateFrom), toKey(dateTo), branchKey ? parseInt(branchKey) : undefined, prodSearch || undefined)
       .then((res: any) => { if (res.success) setData(res.data); })
       .catch(console.error)
       .finally(() => setLoading(false));
