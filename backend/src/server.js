@@ -13,6 +13,8 @@ const adminRoutes = require('./routes/admin');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+if (process.env.TRUST_PROXY) app.set('trust proxy', true);
+
 app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://127.0.0.1:3000'], credentials: true }));
 app.use(express.json({ limit: '10mb' }));
