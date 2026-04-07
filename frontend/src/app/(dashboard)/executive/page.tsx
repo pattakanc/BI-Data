@@ -20,9 +20,6 @@ export default function ExecutivePage() {
   const [dateTo, setDateTo] = useState('2026-04-06');
   const [drilldown, setDrilldown] = useState<{ type: string; from: string; to: string } | null>(null);
 
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const ytdFrom = `${new Date().getFullYear()}-01-01`;
-
   const fetchData = useCallback((from: string, to: string) => {
     setLoading(true);
     api.executiveSummary(toDateKey(from), toDateKey(to))
@@ -58,9 +55,9 @@ export default function ExecutivePage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <KpiCard title="รายได้วันนี้" value={formatCurrency(today.revenue)} icon={<DollarSign className="w-6 h-6" />} color="blue" onClick={() => setDrilldown({ type: 'revenue', from: todayStr, to: todayStr })} />
-        <KpiCard title="GP วันนี้" value={formatCurrency(today.grossProfit)} icon={<TrendingUp className="w-6 h-6" />} color="green" onClick={() => setDrilldown({ type: 'gp', from: todayStr, to: todayStr })} />
-        <KpiCard title="Margin" value={formatPercent(today.margin)} icon={<Activity className="w-6 h-6" />} color="purple" onClick={() => setDrilldown({ type: 'margin', from: todayStr, to: todayStr })} />
+        <KpiCard title="รายได้วันนี้" value={formatCurrency(today.revenue)} icon={<DollarSign className="w-6 h-6" />} color="blue" onClick={() => setDrilldown({ type: 'revenue', from: dateTo, to: dateTo })} />
+        <KpiCard title="GP วันนี้" value={formatCurrency(today.grossProfit)} icon={<TrendingUp className="w-6 h-6" />} color="green" onClick={() => setDrilldown({ type: 'gp', from: dateTo, to: dateTo })} />
+        <KpiCard title="Margin" value={formatPercent(today.margin)} icon={<Activity className="w-6 h-6" />} color="purple" onClick={() => setDrilldown({ type: 'margin', from: dateTo, to: dateTo })} />
         <KpiCard title="รายได้ช่วงเลือก" value={formatCurrency(mtd.revenue)} icon={<DollarSign className="w-6 h-6" />} color="orange" change={mtd.growth} onClick={() => setDrilldown({ type: 'revenue', from: dateFrom, to: dateTo })} />
         <KpiCard title="บิลช่วงเลือก" value={formatNumber(mtd.invoices)} icon={<ShoppingCart className="w-6 h-6" />} color="red" onClick={() => setDrilldown({ type: 'invoices', from: dateFrom, to: dateTo })} />
         <KpiCard title="ลูกค้าช่วงเลือก" value={formatNumber(mtd.customers)} icon={<Users className="w-6 h-6" />} color="indigo" onClick={() => setDrilldown({ type: 'customers', from: dateFrom, to: dateTo })} />
@@ -97,9 +94,9 @@ export default function ExecutivePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <KpiCard title="รายได้ YTD" value={formatCurrency(ytd.revenue)} icon={<DollarSign className="w-6 h-6" />} color="blue" subtitle="Year to Date" onClick={() => setDrilldown({ type: 'revenue', from: ytdFrom, to: todayStr })} />
-        <KpiCard title="GP YTD" value={formatCurrency(ytd.grossProfit)} icon={<TrendingUp className="w-6 h-6" />} color="green" subtitle="Year to Date" onClick={() => setDrilldown({ type: 'gp', from: ytdFrom, to: todayStr })} />
-        <KpiCard title="สาขา Active" value={formatNumber(today.activeBranches)} icon={<Building2 className="w-6 h-6" />} color="purple" subtitle="สาขาที่มียอดขายวันนี้" onClick={() => setDrilldown({ type: 'revenue', from: todayStr, to: todayStr })} />
+        <KpiCard title="รายได้ YTD" value={formatCurrency(ytd.revenue)} icon={<DollarSign className="w-6 h-6" />} color="blue" subtitle="Year to Date" onClick={() => setDrilldown({ type: 'revenue', from: dateTo.slice(0, 4) + '-01-01', to: dateTo })} />
+        <KpiCard title="GP YTD" value={formatCurrency(ytd.grossProfit)} icon={<TrendingUp className="w-6 h-6" />} color="green" subtitle="Year to Date" onClick={() => setDrilldown({ type: 'gp', from: dateTo.slice(0, 4) + '-01-01', to: dateTo })} />
+        <KpiCard title="สาขา Active" value={formatNumber(today.activeBranches)} icon={<Building2 className="w-6 h-6" />} color="purple" subtitle="สาขาที่มียอดขายวันนี้" onClick={() => setDrilldown({ type: 'revenue', from: dateTo, to: dateTo })} />
       </div>
 
       <ChartCard title="รายละเอียดสาขา" subtitle="Branch Details">
