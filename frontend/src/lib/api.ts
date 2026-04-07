@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:4700/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4700/api';
 
 async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
