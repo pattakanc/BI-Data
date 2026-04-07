@@ -1,0 +1,1 @@
+สร้างระบบ BI DataAnalytic โดยใช้ไฟล์ที่ทำการ Upload ให้ SRS_BI_DataAnalytic_V1.docx และทำบน Local ก่อนโดยทำที่ C:\Users\HP\BI_DataAnalytic ดำเนินการได้เลย ทั้ง Frontend และ Backend ในส่วน Database ก็ให้ Create ที่ local PostgrSQL 16 (ตามรูปที่ upload ให้)  Username : postgres ,Password : AutoFast@2025 ดำเนินการได้เลย
