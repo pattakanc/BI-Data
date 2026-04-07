@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, LineChart, Line, Legend,
 } from 'recharts';
-import { X, Search, Building2, FileText, Package, TrendingUp, DollarSign, ShoppingCart, CreditCard } from 'lucide-react';
+import { X, Search, Building2, FileText, Package, TrendingUp, DollarSign, ShoppingCart, CreditCard, Activity, Users } from 'lucide-react';
 import { api } from '@/lib/api';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 
@@ -126,10 +126,70 @@ const KPI_CONFIG = {
       { key: 'gp', label: 'กำไร', format: formatCurrency, cls: 'text-green-600' },
     ],
   },
+  margin: {
+    title: 'อัตรากำไร (Margin)',
+    subtitle: 'Gross Margin — Drill-down รายละเอียดอัตรากำไร',
+    icon: Activity,
+    color: '#8b5cf6',
+    bgClass: 'bg-purple-600',
+    lightBg: 'bg-purple-50',
+    textClass: 'text-purple-800',
+    labelClass: 'text-purple-600',
+    field: 'margin' as const,
+    label: 'Margin',
+    formatVal: (v: number) => `${(v * 100).toFixed(1)}%`,
+    invoiceSortLabel: 'ยอดขายสูงสุด',
+    branchCols: [
+      { key: 'margin', label: 'Margin', format: (v: number) => `${(v * 100).toFixed(1)}%`, cls: 'font-bold text-purple-700' },
+      { key: 'revenue', label: 'รายได้', format: formatCurrency, cls: '' },
+      { key: 'gp', label: 'กำไร', format: formatCurrency, cls: 'text-green-600' },
+    ],
+    productCols: [
+      { key: 'gp', label: 'กำไร', format: formatCurrency, cls: 'font-bold text-green-700' },
+      { key: 'revenue', label: 'รายได้', format: formatCurrency, cls: '' },
+      { key: 'qty', label: 'จำนวน', format: formatNumber, cls: '' },
+    ],
+    invoiceCols: [
+      { key: 'gp', label: 'กำไร', format: formatCurrency, cls: 'font-bold text-green-700' },
+      { key: 'revenue', label: 'ยอดขาย', format: formatCurrency, cls: '' },
+      { key: 'discount', label: 'ส่วนลด', format: formatCurrency, cls: 'text-orange-500 text-xs' },
+    ],
+  },
+  customers: {
+    title: 'จำนวนลูกค้า',
+    subtitle: 'Total Customers — Drill-down รายละเอียดลูกค้า',
+    icon: Users,
+    color: '#6366f1',
+    bgClass: 'bg-indigo-600',
+    lightBg: 'bg-indigo-50',
+    textClass: 'text-indigo-800',
+    labelClass: 'text-indigo-600',
+    field: 'customers' as const,
+    label: 'ลูกค้า',
+    formatVal: formatNumber,
+    invoiceSortLabel: 'ยอดขายสูงสุด',
+    branchCols: [
+      { key: 'customers', label: 'ลูกค้า', format: formatNumber, cls: 'font-bold text-indigo-700' },
+      { key: 'revenue', label: 'รายได้', format: formatCurrency, cls: '' },
+      { key: 'invoices', label: 'จำนวนบิล', format: formatNumber, cls: '' },
+    ],
+    productCols: [
+      { key: 'qty', label: 'จำนวนขาย', format: formatNumber, cls: 'font-bold text-indigo-700' },
+      { key: 'revenue', label: 'รายได้', format: formatCurrency, cls: '' },
+      { key: 'gp', label: 'กำไร', format: formatCurrency, cls: 'text-green-600' },
+    ],
+    invoiceCols: [
+      { key: 'revenue', label: 'ยอดขาย', format: formatCurrency, cls: 'font-bold text-blue-700' },
+      { key: 'gp', label: 'กำไร', format: formatCurrency, cls: 'text-green-600' },
+      { key: 'discount', label: 'ส่วนลด', format: formatCurrency, cls: 'text-orange-500 text-xs' },
+    ],
+  },
 };
 
+type KpiType = keyof typeof KPI_CONFIG;
+
 interface SalesKpiDrilldownProps {
-  type: 'revenue' | 'gp' | 'invoices' | 'discount';
+  type: KpiType;
   dateFrom: string;
   dateTo: string;
   onClose: () => void;
@@ -166,11 +226,13 @@ export default function SalesKpiDrilldown({ type, dateFrom, dateTo, onClose }: S
 
   const branchSummary = (data?.branchSummary || []).map((r: any) => ({
     ...r, revenue: Number(r.revenue) || 0, gp: Number(r.gp) || 0,
-    discount: Number(r.discount) || 0, invoices: Number(r.invoices) || 0, margin: Number(r.margin) || 0,
+    discount: Number(r.discount) || 0, invoices: Number(r.invoices) || 0,
+    customers: Number(r.customers) || 0, margin: Number(r.margin) || 0,
   }));
   const dailyTrend = (data?.dailyTrend || []).map((r: any) => ({
     ...r, revenue: Number(r.revenue) || 0, gp: Number(r.gp) || 0,
     discount: Number(r.discount) || 0, invoices: Number(r.invoices) || 0,
+    customers: Number(r.customers) || 0, margin_pct: Number(r.margin_pct) || 0,
   }));
   const invoiceList = (data?.invoices || []).map((r: any) => ({
     ...r, revenue: Number(r.revenue) || 0, gp: Number(r.gp) || 0, discount: Number(r.discount) || 0,
@@ -179,7 +241,7 @@ export default function SalesKpiDrilldown({ type, dateFrom, dateTo, onClose }: S
     ...r, revenue: Number(r.revenue) || 0, gp: Number(r.gp) || 0,
     discount: Number(r.discount) || 0, qty: Number(r.qty) || 0,
   }));
-  const totals = data?.totals || { revenue: 0, gp: 0, discount: 0, invoices: 0 };
+  const totals = data?.totals || { revenue: 0, gp: 0, discount: 0, invoices: 0, customers: 0, margin: 0 };
   const mainValue = totals[cfg.field] || 0;
 
   return (
@@ -279,12 +341,12 @@ export default function SalesKpiDrilldown({ type, dateFrom, dateTo, onClose }: S
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="full_date" fontSize={10}
                       tickFormatter={(v: any) => new Date(v).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })} />
-                    <YAxis fontSize={10} tickFormatter={(v: any) => type === 'invoices' ? String(v) : `${(v / 1000).toFixed(0)}K`} />
+                    <YAxis fontSize={10} tickFormatter={(v: any) => type === 'invoices' || type === 'customers' ? String(v) : type === 'margin' ? `${v}%` : `${(v / 1000).toFixed(0)}K`} />
                     <Tooltip
-                      formatter={(v: any) => type === 'invoices' ? formatNumber(v) : formatCurrency(v)}
+                      formatter={(v: any) => type === 'invoices' || type === 'customers' ? formatNumber(v) : type === 'margin' ? `${v}%` : formatCurrency(v)}
                       labelFormatter={(l: any) => new Date(l).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}
                     />
-                    <Line type="monotone" dataKey={cfg.field} stroke={cfg.color} strokeWidth={2.5} name={cfg.label} dot={false} />
+                    <Line type="monotone" dataKey={type === 'margin' ? 'margin_pct' : cfg.field} stroke={cfg.color} strokeWidth={2.5} name={cfg.label} dot={false} />
                     <Legend />
                   </LineChart>
                 </ResponsiveContainer>
@@ -299,9 +361,9 @@ export default function SalesKpiDrilldown({ type, dateFrom, dateTo, onClose }: S
                   <ResponsiveContainer width="100%" height={Math.max(250, Math.min(branchSummary.length * 24, 500))}>
                     <BarChart data={branchSummary.slice(0, 20)} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis type="number" fontSize={10} tickFormatter={(v: any) => type === 'invoices' ? String(v) : `${(v / 1000).toFixed(0)}K`} />
+                      <XAxis type="number" fontSize={10} tickFormatter={(v: any) => type === 'invoices' || type === 'customers' ? String(v) : type === 'margin' ? `${(v * 100).toFixed(0)}%` : `${(v / 1000).toFixed(0)}K`} />
                       <YAxis type="category" dataKey="branch_name" fontSize={10} width={100} />
-                      <Tooltip formatter={(v: any) => type === 'invoices' ? formatNumber(v) : formatCurrency(v)} />
+                      <Tooltip formatter={(v: any) => type === 'invoices' || type === 'customers' ? formatNumber(v) : type === 'margin' ? `${(v * 100).toFixed(1)}%` : formatCurrency(v)} />
                       <Bar dataKey={cfg.field} fill={cfg.color} radius={[0, 4, 4, 0]} name={cfg.label} />
                     </BarChart>
                   </ResponsiveContainer>

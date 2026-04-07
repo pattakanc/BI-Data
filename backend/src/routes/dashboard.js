@@ -147,8 +147,8 @@ router.get('/sales/kpi-drilldown', async (req, res) => {
     const { from, to } = parseDateRange(req.query);
     const { type, branchKey, productSearch } = req.query;
 
-    if (!type || !['revenue', 'gp', 'invoices', 'discount'].includes(type)) {
-      return res.status(400).json({ success: false, message: 'type must be revenue|gp|invoices|discount' });
+    if (!type || !['revenue', 'gp', 'invoices', 'discount', 'margin', 'customers'].includes(type)) {
+      return res.status(400).json({ success: false, message: 'type must be revenue|gp|invoices|discount|margin|customers' });
     }
 
     let paramIdx = 3;
@@ -169,23 +169,27 @@ router.get('/sales/kpi-drilldown', async (req, res) => {
     const whereClause = filters.join(' AND ');
 
     // Summary by branch
+    const orderByMap = { revenue: 'revenue', gp: 'gp', invoices: 'invoices', discount: 'discount', margin: 'margin', customers: 'customers' };
     const branchSummary = await pool.query(`
       SELECT db.branch_key, db.branch_name, db.region_name,
         SUM(fsi.net_amount) as revenue, SUM(fsi.gross_profit_amount) as gp,
         SUM(fsi.discount_amount) as discount, COUNT(*) as invoices,
+        COUNT(DISTINCT fsi.customer_key) as customers,
         CASE WHEN SUM(fsi.net_amount) > 0 THEN SUM(fsi.gross_profit_amount) / SUM(fsi.net_amount) ELSE 0 END as margin
       FROM dw.fact_sales_invoice fsi
       JOIN dw.dim_branch db ON fsi.branch_key = db.branch_key
       WHERE ${whereClause}
       GROUP BY db.branch_key, db.branch_name, db.region_name
-      ORDER BY ${type === 'invoices' ? 'invoices' : type === 'discount' ? 'discount' : type === 'gp' ? 'gp' : 'revenue'} DESC
+      ORDER BY ${orderByMap[type] || 'revenue'} DESC
     `, params);
 
     // Daily trend
     const dailyTrend = await pool.query(`
       SELECT dd.full_date, dd.month_no,
         SUM(fsi.net_amount) as revenue, SUM(fsi.gross_profit_amount) as gp,
-        SUM(fsi.discount_amount) as discount, COUNT(*) as invoices
+        SUM(fsi.discount_amount) as discount, COUNT(*) as invoices,
+        COUNT(DISTINCT fsi.customer_key) as customers,
+        CASE WHEN SUM(fsi.net_amount) > 0 THEN ROUND(SUM(fsi.gross_profit_amount) / SUM(fsi.net_amount) * 100, 1) ELSE 0 END as margin_pct
       FROM dw.fact_sales_invoice fsi
       JOIN dw.dim_date dd ON fsi.date_key = dd.date_key
       WHERE ${whereClause}
@@ -231,7 +235,9 @@ router.get('/sales/kpi-drilldown', async (req, res) => {
       gp: acc.gp + Number(r.gp),
       discount: acc.discount + Number(r.discount),
       invoices: acc.invoices + Number(r.invoices),
-    }), { revenue: 0, gp: 0, discount: 0, invoices: 0 });
+      customers: acc.customers + Number(r.customers),
+    }), { revenue: 0, gp: 0, discount: 0, invoices: 0, customers: 0 });
+    totals.margin = totals.revenue > 0 ? totals.gp / totals.revenue : 0;
 
     res.json({
       success: true,
